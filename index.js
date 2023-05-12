@@ -14,7 +14,7 @@ const API = (() => {
     return fetch(URL + "/inventory" + "/" + id, {
       method:"PATCH",
       body: JSON.stringify(newAmount),
-      header: "Content-type: application/json"}).then((data)=>data.json());
+      headers: "Content-type: application/json"}).then((data)=>data.json());
   }
 
   const addToCart = (inventoryItem) => {
@@ -22,21 +22,34 @@ const API = (() => {
     return fetch(URL + "/cart", {
       method: "POST",
       body: JSON.stringify(inventoryItem),
-      header: {"Content-type": "application/json"}
+      headers: {
+        "Content-Type": "application/json",
+      },
     }).then((data)=>data.json());
   };
+
+  // const addToCart = (inventoryItem) => {
+  //   // define your method to add an item to cart
+  //   return fetch(URL + "/cart", {
+  //     method: "POST",
+  //     body: JSON.stringify(inventoryItem),
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //     },
+  //   }).then((data) => data.json());
+  // };
 
   const updateCart = (id, newAmount) => {
     // define your method to update an item in cart
     return fetch(URL + "/cart" + "/" + id, {
       method: "PATCH",
       body: JSON.stringify(newAmount),
-      header: "Content-type: application/json"}).then((data)=>data.json());
+      headers: {"Content-type": "application/json"}}).then((data)=>data.json());
   };
 
   const deleteFromCart = (id) => {
     // define your method to delete an item in cart
-    fetch (URL + "/cart" + id, {method: "DELETE"}).then((data)=>data.json());
+    return fetch (URL + "/cart" + "/" + id, {method: "DELETE"}).then((data)=>data.json());
   };
 
   const checkout = () => {
@@ -123,11 +136,10 @@ const View = (() => {
   const incrementButtonEl = document.getElementsByTagName("")
   const decrementButtonEl = document.querySelectorAll(".decrement-button")
   const addBtnEl = document.querySelector(".add-button")
+  const checkoutBtnEl = document.querySelector(".checkout-btn")
 
   const renderInventory = (inventoryList) => {
     let listItem = "";
-
-
     inventoryList.forEach((inventoryItem) => {
       let listItemText = `
         <li inventory-id="${inventoryItem.id}">
@@ -151,31 +163,14 @@ const View = (() => {
     let listItem = "";
     cartList.forEach((cartItem) => {
       let listItemText = `
-        <li inventory-id="${cartItem.id}">
-          <span>${cartItem.content}
-            <button class="decrement-button">-</button>
-            <p>${cartItem.amount}</p>
-            <button class="increment-button">+</button>
-            <button class="add-button">add to cart</button>
-          </span>
+        <li cart-id="${cartItem.id}">
+          <span>${cartItem.content} x ${cartItem.amount}</span>
+          <button class="delete-btn">delete</button>
         </li>`
       listItem += listItemText
     });
-    inventoryListEl.innerHTML = listItem;
+    shoppingListEl.innerHTML = listItem;
   }
-
-  // const renderCart = (cartList) => {
-  //   let listItem = "";
-
-  //   cartList.forEach((cartItem) => {
-  //     let listItemText = `
-  //       <li cart-id="${cartItem.id}">
-  //         <span>${cartItem.content}</span>
-  //       </li>`
-  //     listItem += listItemText
-  //   });
-  //   inventoryListEl.innerHTML = listItem;
-  // }
 
   return {
     inventoryListEl,
@@ -186,7 +181,8 @@ const View = (() => {
     incrementButtonEl,
     decrementButtonEl,
     addBtnEl,
-    // renderCart,
+    renderCart,
+    checkoutBtnEl,
   };
 })();
 
@@ -198,6 +194,9 @@ const Controller = ((model, view) => {
     model.getInventory().then((data)=>{
       state.inventory = data;
     });
+    model.getCart().then((data)=>{
+      state.cart = data;
+    })
   };
 
   const handleUpdateAmount = () => {
@@ -211,37 +210,59 @@ const Controller = ((model, view) => {
         inventoryItem.amount--
         state.updateInventory(id, inventoryItem.amount);
       }
-      // model.updateInventory(id,inventoryItem.amount);
     });
   };
 
   const handleAddToCart = () => {
     view.inventoryListEl.addEventListener("click", (e)=>{
       e.preventDefault();
-      const id = e.target.parentNode.parentNode.getAttribute("inventory-id");
+      let id = e.target.parentNode.parentNode.getAttribute("inventory-id");
       const inventoryItem = state.inventory.find((item)=>item.id === +id);
-      console.log(inventoryItem)
-      if(e.target.getAttribute("class") === "add-button"){
-        model.addToCart(inventoryItem).then((data)=>{
-          console.log(data)
-          state.cart = [data, ...state.cart];
-        })
-      }
-      console.log(state.cart)
+      const stateItem = state.cart.find((item)=>item.id === +id);
 
+      if(e.target.getAttribute("class") === "add-button"){
+        // if the item already exists in the shopping cart
+        if(state.cart.find((item)=>item.id === +id)){
+            model.updateCart(id, {amount: inventoryItem.amount + stateItem.amount}).then((data)=>{
+              let objIndex = state.cart.findIndex((item)=>item.id === +id)
+              state.cart[objIndex] = data;
+              state.cart = state.cart;
+            })
+          } else {
+          model.addToCart(inventoryItem).then((data)=>{
+            state.cart = [data, ...state.cart];
+          })}
+      }
     })
   };
 
-  const handleDelete = () => {};
+  const handleDelete = () => {
+    view.shoppingListEl.addEventListener("click", (e)=>{
+      let id = e.target.parentNode.getAttribute("cart-id")
+      if(e.target.getAttribute("class") !== "delete-btn") return;
+      model.deleteFromCart(id).then((data)=>{
+        state.cart = state.cart.filter((item)=> item.id !== +id)
+      })
+    })
+  };
 
-  const handleCheckout = () => {};
+  const handleCheckout = () => {
+    view.checkoutBtnEl.addEventListener("click", ()=>{
+      model.checkout().then((data)=>{
+        state.cart = [];
+      })
+    })
+  };
+
   const bootstrap = () => {
     handleUpdateAmount();
     handleAddToCart();
+    handleDelete();
+    handleCheckout();
     init();
     state.subscribe(() => {
       view.renderInventory(state.inventory);
-      // view.renderCart(state.cart);
+      view.renderCart(state.cart);
     }
     )
 
