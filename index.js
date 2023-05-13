@@ -145,7 +145,7 @@ const View = (() => {
         <li inventory-id="${inventoryItem.id}">
           <span>${inventoryItem.content}
             <button class="decrement-button">-</button>
-            <p>${inventoryItem.amount}</p>
+            ${inventoryItem.amount}
             <button class="increment-button">+</button>
             <button class="add-button">add to cart</button>
           </span>
@@ -230,7 +230,7 @@ const Controller = ((model, view) => {
             })
           } else {
           model.addToCart(inventoryItem).then((data)=>{
-            state.cart = [data, ...state.cart];
+            state.cart = [data, ...state.cart].sort();
           })}
       }
     })

@@ -1,0 +1,93 @@
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+#app {
+    /* margin:auto; */
+    text-align: center;
+    display: flex;
+}
+
+.inventory-container{
+    justify-content: center;
+    flex: 1;
+}
+
+.cart-container{
+    justify-content: center;
+    flex: 1;
+    position:relative;
+}
+
+.inventory-list, .cart-list, .checkout-btn{
+    margin: 10px 20px;
+}
+
+.cart-wrapper{
+    display: flex;
+    flex-direction: column;
+    height: 700px;
+}
+
+.checkout-btn {
+    background-color: black;
+    color: white;
+    border-radius: 5px;
+    height: 40px;
+    text-align: center;
+    width: 90%;
+    /* margin-top: auto; */
+    justify-content: space-between;
+    /* align-self: flex-end; */
+    /* position:absolute; */
+    /* bottom: 10px; */
+    /* width: inherit; */
+}
+
+ul {
+    list-style-type: none;
+}
+
+li {
+    margin-bottom: 20px;
+    background-color: #e1dac8;
+    border-radius: 7px;  
+    padding: 10px 20px; 
+}
+
+button {
+    border-style: none;
+}
+
+.delete-btn, .add-button{
+    background-color: #3d6eaa;
+    color: white;
+    border-radius: 5px;
+    height: 25px;
+    padding: 2px 5px;
+    margin: 5px 10px;
+}
+
+.decrement-button, .increment-button{
+    width: 30px;
+    height: 25px;
+    border-radius: 5px;
+    color: white;
+    margin: 5px;
+}
+
+.decrement-button{
+    background-color: #b04848;
+}
+
+.increment-button{
+    background-color: #74ad50;
+}
+
+/* .add-button{
+    background-color: #3d6eaa;
+    border-radius: 5px;
+    color
+} */
