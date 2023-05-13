@@ -208,6 +208,9 @@ const Controller = ((model, view) => {
         state.updateInventory(id, inventoryItem.amount);
       } else if (e.target.getAttribute("class") === "decrement-button"){
         inventoryItem.amount--
+        if(inventoryItem.amount < 0){
+          inventoryItem.amount = 0
+        }
         state.updateInventory(id, inventoryItem.amount);
       }
     });
@@ -228,10 +231,10 @@ const Controller = ((model, view) => {
               state.cart[objIndex] = data;
               state.cart = state.cart;
             })
-          } else {
-          model.addToCart(inventoryItem).then((data)=>{
-            state.cart = [data, ...state.cart].sort();
-          })}
+          } else if (inventoryItem.amount > 0){
+            model.addToCart(inventoryItem).then((data)=>{
+            state.cart = [data, ...state.cart];
+          })} else {return};
       }
     })
   };
